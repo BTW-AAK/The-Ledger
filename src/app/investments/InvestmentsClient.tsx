@@ -127,7 +127,7 @@ export default function InvestmentsClient({
 
       {showForm && (
         <div className="bg-panel rounded-[10px] p-4 mb-4">
-          <div className="flex gap-3 mb-3">
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <div className="flex-1">
               <div className="text-[11px] text-sage tracking-wide mb-1.5">Name</div>
               <input
@@ -147,7 +147,7 @@ export default function InvestmentsClient({
               />
             </div>
           </div>
-          <div className="flex gap-3 mb-3">
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <div className="flex-1">
               <div className="text-[11px] text-sage tracking-wide mb-1.5">Quantity</div>
               <input
@@ -205,11 +205,11 @@ export default function InvestmentsClient({
         {holdings.map((h) => (
           <div key={h.id} className="flex items-center gap-3 px-4 py-3 border-t border-lineSoft first:border-t-0 group">
             <div className="flex-1 min-w-0">
-              <div className="text-sm text-paper">{h.name}{h.ticker ? ` (${h.ticker})` : ""}</div>
-              <div className="text-[11px] text-sage">{h.accountName} · {h.quantity} shares</div>
+              <div className="text-sm text-paper truncate">{h.name}{h.ticker ? ` (${h.ticker})` : ""}</div>
+              <div className="text-[11px] text-sage truncate">{h.accountName} · {h.quantity} shares</div>
             </div>
-            <div className="font-mono text-sm text-paper">{formatCents(h.currentValue)}</div>
-            <button onClick={() => handleDelete(h.id)} className="opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Remove holding">
+            <div className="font-mono text-sm text-paper shrink-0">{formatCents(h.currentValue)}</div>
+            <button onClick={() => handleDelete(h.id)} className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0" aria-label="Remove holding">
               <i className="ti ti-trash text-[14px] text-sage" aria-hidden="true" />
             </button>
           </div>

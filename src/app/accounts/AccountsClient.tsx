@@ -25,30 +25,52 @@ const LIABILITY_TYPES = new Set(["CREDIT_CARD", "LOAN"]);
 
 export default function AccountsClient({ accounts }: { accounts: Account[] }) {
   const router = useRouter();
-  const [showForm, setShowForm] = useState(false);
+  const [formMode, setFormMode] = useState<"none" | "create" | string>("none");
   const [name, setName] = useState("");
   const [type, setType] = useState("CHECKING");
   const [balanceInput, setBalanceInput] = useState("");
   const [saving, setSaving] = useState(false);
 
   const isLiability = LIABILITY_TYPES.has(type);
+  const editingAccount = accounts.find((a) => a.id === formMode) ?? null;
 
-  async function handleCreate() {
+  function openCreateForm() {
+    setName("");
+    setType("CHECKING");
+    setBalanceInput("");
+    setFormMode("create");
+  }
+
+  function openEditForm(a: Account) {
+    setName(a.name);
+    setType(a.type);
+    // startingBalance is stored signed (liabilities negative); show the magnitude to edit.
+    setBalanceInput(String(Math.abs(a.startingBalance) / 100));
+    setFormMode(a.id);
+  }
+
+  async function handleSave() {
     if (!name.trim()) return;
     const parsed = parseFloat(balanceInput || "0");
     const magnitude = Math.round((Number.isNaN(parsed) ? 0 : parsed) * 100);
     const startingBalance = isLiability ? -Math.abs(magnitude) : magnitude;
 
     setSaving(true);
-    await fetch("/api/accounts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, type, startingBalance }),
-    });
+    if (formMode === "create") {
+      await fetch("/api/accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, type, startingBalance }),
+      });
+    } else {
+      await fetch(`/api/accounts/${formMode}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, type, startingBalance }),
+      });
+    }
     setSaving(false);
-    setShowForm(false);
-    setName("");
-    setBalanceInput("");
+    setFormMode("none");
     router.refresh();
   }
 
@@ -63,7 +85,7 @@ export default function AccountsClient({ accounts }: { accounts: Account[] }) {
       <div className="flex items-center justify-between mb-5">
         <div className="font-display text-xl text-paper">Accounts</div>
         <button
-          onClick={() => setShowForm((v) => !v)}
+          onClick={openCreateForm}
           className="flex items-center gap-1.5 text-sm bg-gold text-goldText px-3.5 py-2 rounded-lg"
         >
           <i className="ti ti-plus text-[15px]" aria-hidden="true" />
@@ -71,7 +93,7 @@ export default function AccountsClient({ accounts }: { accounts: Account[] }) {
         </button>
       </div>
 
-      {showForm && (
+      {formMode !== "none" && (
         <div className="bg-panel rounded-[10px] p-4 mb-4">
           <div className="mb-3">
             <div className="text-[11px] text-sage tracking-wide mb-1.5">Name</div>
@@ -82,8 +104,8 @@ export default function AccountsClient({ accounts }: { accounts: Account[] }) {
               className="w-full bg-ink border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none focus:border-gold"
             />
           </div>
-          <div className="flex gap-3 mb-3">
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
+            <div className="flex-1 min-w-0">
               <div className="text-[11px] text-sage tracking-wide mb-1.5">Type</div>
               <select
                 value={type}
@@ -97,9 +119,9 @@ export default function AccountsClient({ accounts }: { accounts: Account[] }) {
                 ))}
               </select>
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="text-[11px] text-sage tracking-wide mb-1.5">
-                {isLiability ? "Current amount owed" : "Starting balance"}
+                {isLiability ? "Current amount owed" : editingAccount ? "Starting balance" : "Starting balance"}
               </div>
               <input
                 inputMode="decimal"
@@ -115,15 +137,21 @@ export default function AccountsClient({ accounts }: { accounts: Account[] }) {
               Enter this as a positive number — it will be tracked as a liability automatically.
             </div>
           )}
+          {editingAccount && (
+            <div className="text-xs text-sage mb-3">
+              Editing the starting balance shifts this account's whole balance history — use it to
+              correct a mistake, not to record a new transaction.
+            </div>
+          )}
           <div className="flex gap-2">
             <button
-              onClick={handleCreate}
+              onClick={handleSave}
               disabled={saving}
               className="text-sm bg-gold text-goldText px-3.5 py-2 rounded-lg"
             >
-              Create account
+              {editingAccount ? "Save changes" : "Create account"}
             </button>
-            <button onClick={() => setShowForm(false)} className="text-sm text-sage px-2">
+            <button onClick={() => setFormMode("none")} className="text-sm text-sage px-2">
               Cancel
             </button>
           </div>
@@ -137,23 +165,24 @@ export default function AccountsClient({ accounts }: { accounts: Account[] }) {
             className="flex items-center gap-3 px-4 py-3.5 border-t border-lineSoft first:border-t-0 group"
           >
             <div className="flex-1 min-w-0">
-              <div className="text-sm text-paper">{a.name}</div>
+              <div className="text-sm text-paper truncate">{a.name}</div>
               <div className="text-[11px] text-sage">
                 {ACCOUNT_TYPES.find((t) => t.value === a.type)?.label ?? a.type}
               </div>
             </div>
             <div
-              className={`font-mono text-sm ${a.balanceCents < 0 ? "text-rust" : "text-paper"}`}
+              className={`font-mono text-sm shrink-0 ${a.balanceCents < 0 ? "text-rust" : "text-paper"}`}
             >
               {formatCents(a.balanceCents)}
             </div>
-            <button
-              onClick={() => handleArchive(a.id)}
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-              aria-label="Archive account"
-            >
-              <i className="ti ti-archive text-[15px] text-sage" aria-hidden="true" />
-            </button>
+            <div className="flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
+              <button onClick={() => openEditForm(a)} aria-label="Edit account">
+                <i className="ti ti-edit text-[15px] text-sage" aria-hidden="true" />
+              </button>
+              <button onClick={() => handleArchive(a.id)} aria-label="Archive account">
+                <i className="ti ti-archive text-[15px] text-sage" aria-hidden="true" />
+              </button>
+            </div>
           </div>
         ))}
         {accounts.length === 0 && (

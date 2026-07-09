@@ -123,3 +123,17 @@ These were marked lower-priority (P2) in the original spec and aren't in this ve
 - A second household login with shared visibility
 
 Happy to build any of these next — just ask.
+
+---
+
+## 7. What's new in this update
+
+No database migration needed for this batch — the schema didn't change.
+
+- **Command palette** — press `Cmd+K` (or `Ctrl+K` on Windows) anywhere to search and jump to any page or add a transaction.
+- **Global "n" shortcut** — press `n` from anywhere (when not typing in a field) to open the add-transaction modal instantly.
+- **Edit accounts** — the Accounts page now supports editing name/type/balance, not just archiving.
+- **Bills page** (`/recurring`) — due-soon list, a simple month calendar with due-date markers, and a "Log now" button that creates the transaction and advances the next due date automatically.
+- **Tags** — free-form tags on any transaction, with a filter dropdown on the Transactions page.
+- **Reports page** (`/reports`) — a printable monthly report (income/expenses, category breakdown, budget performance, largest transactions, net worth). Click **Export PDF**, then choose "Save as PDF" in your browser's print dialog.
+- **Mobile layout fixes** — the sidebar now collapses into a bottom tab bar below the `md` breakpoint instead of squeezing page content into a narrow column, which was the cause of text overflowing on phones. Grids and forms across every page now stack vertically on small screens instead of cramming side by side.

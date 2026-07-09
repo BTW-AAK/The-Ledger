@@ -61,14 +61,14 @@ export default function DashboardView({
 
   return (
     <div className="flex flex-col gap-5 max-w-[900px]">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="text-xs text-sage">
           Net worth ·{" "}
           {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
         </div>
         <button
           onClick={() => setModalOpen(true)}
-          className="flex items-center gap-1.5 text-sm bg-gold text-goldText px-3.5 py-2 rounded-lg"
+          className="flex items-center gap-1.5 text-sm bg-gold text-goldText px-3.5 py-2 rounded-lg shrink-0"
         >
           <i className="ti ti-plus text-[15px]" aria-hidden="true" />
           Add transaction
@@ -92,13 +92,13 @@ export default function DashboardView({
 
       <NetWorthChart data={netWorthSeries} />
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
         <MetricCard label="Income" value={formatCents(incomeCents)} />
         <MetricCard label="Expenses" value={formatCents(expensesCents)} />
         <MetricCard label="Savings rate" value={`${savingsRatePct}%`} valueClassName="text-gold" />
       </div>
 
-      <div className="grid grid-cols-2 gap-3.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         <div className="bg-panel rounded-[10px] p-4">
           <div className="text-sm text-paper mb-2.5">Spending by category</div>
           <SpendingDonut data={spendingByCategory.map((c) => ({ ...c }))} />

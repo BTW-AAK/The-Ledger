@@ -76,7 +76,7 @@ export default function GoalsClient({ goals, accounts }: { goals: Goal[]; accoun
               className="w-full bg-ink border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none focus:border-gold"
             />
           </div>
-          <div className="flex gap-3 mb-3">
+          <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <div className="flex-1">
               <div className="text-[11px] text-sage tracking-wide mb-1.5">Target amount</div>
               <input
@@ -127,15 +127,15 @@ export default function GoalsClient({ goals, accounts }: { goals: Goal[]; accoun
           const pct = Math.min(100, Math.round((g.currentAmount / g.targetAmount) * 100));
           return (
             <div key={g.id} className="bg-panel rounded-[10px] p-4 group">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-paper">{g.name}</span>
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                <span className="text-sm text-paper truncate min-w-0">{g.name}</span>
+                <div className="flex items-center gap-3 shrink-0">
                   <span className="font-mono text-xs text-sage">
                     {formatCents(g.currentAmount)} / {formatCents(g.targetAmount)}
                   </span>
                   <button
                     onClick={() => handleDelete(g.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     aria-label="Delete goal"
                   >
                     <i className="ti ti-trash text-[14px] text-sage" aria-hidden="true" />

@@ -25,6 +25,7 @@ type Txn = {
   categoryId: string | null;
   category: { id: string; name: string; icon: string; color: string } | null;
   notes: string | null;
+  tags: string[];
 };
 
 export default function TransactionsClient({
@@ -46,15 +47,23 @@ export default function TransactionsClient({
   const [search, setSearch] = useState("");
   const [accountFilter, setAccountFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [tagFilter, setTagFilter] = useState("");
+
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    initialTransactions.forEach((t) => t.tags.forEach((tag) => set.add(tag)));
+    return Array.from(set).sort();
+  }, [initialTransactions]);
 
   const filtered = useMemo(() => {
     return initialTransactions.filter((t) => {
       if (search && !t.merchant.toLowerCase().includes(search.toLowerCase())) return false;
       if (accountFilter && t.accountId !== accountFilter) return false;
       if (categoryFilter && t.categoryId !== categoryFilter) return false;
+      if (tagFilter && !t.tags.includes(tagFilter)) return false;
       return true;
     });
-  }, [initialTransactions, search, accountFilter, categoryFilter]);
+  }, [initialTransactions, search, accountFilter, categoryFilter, tagFilter]);
 
   async function handleDelete(id: string) {
     if (!confirm("Delete this transaction?")) return;
@@ -82,6 +91,7 @@ export default function TransactionsClient({
         isExpense: editing.amount < 0,
         merchant: editing.merchant,
         notes: editing.notes ?? "",
+        tags: editing.tags,
       }
     : undefined;
 
@@ -98,37 +108,53 @@ export default function TransactionsClient({
         </button>
       </div>
 
-      <div className="flex gap-2.5 mb-4">
+      <div className="flex flex-col sm:flex-row gap-2.5 mb-4">
         <input
           placeholder="Search merchant"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 bg-panel border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none focus:border-gold"
+          className="flex-1 min-w-0 bg-panel border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none focus:border-gold"
         />
-        <select
-          value={accountFilter}
-          onChange={(e) => setAccountFilter(e.target.value)}
-          className="bg-panel border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none"
-        >
-          <option value="">All accounts</option>
-          {accounts.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
-        </select>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-panel border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none"
-        >
-          <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+        <div className="flex gap-2.5">
+          <select
+            value={accountFilter}
+            onChange={(e) => setAccountFilter(e.target.value)}
+            className="flex-1 min-w-0 bg-panel border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none"
+          >
+            <option value="">All accounts</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
+            ))}
+          </select>
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="flex-1 min-w-0 bg-panel border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none"
+          >
+            <option value="">All categories</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          {allTags.length > 0 && (
+            <select
+              value={tagFilter}
+              onChange={(e) => setTagFilter(e.target.value)}
+              className="flex-1 min-w-0 bg-panel border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none"
+            >
+              <option value="">All tags</option>
+              {allTags.map((tag) => (
+                <option key={tag} value={tag}>
+                  {tag}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
 
       <div className="bg-panel rounded-[10px] overflow-hidden">
@@ -149,15 +175,29 @@ export default function TransactionsClient({
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm text-paper truncate">{t.merchant}</div>
-              <div className="text-[11px] text-sage">
+              <div className="text-[11px] text-sage truncate">
                 {t.category?.name ?? "Uncategorized"} · {t.accountName} ·{" "}
                 {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </div>
+              {t.tags.length > 0 && (
+                <div className="flex gap-1 mt-1 flex-wrap">
+                  {t.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-[10px] bg-lineSoft text-sage rounded-full px-1.5 py-0.5"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className={`font-mono text-sm ${t.amount > 0 ? "text-gold" : "text-paper"}`}>
+            <div
+              className={`font-mono text-sm shrink-0 ${t.amount > 0 ? "text-gold" : "text-paper"}`}
+            >
               {formatSignedCents(t.amount)}
             </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
               <button onClick={() => openEdit(t)} aria-label="Edit">
                 <i className="ti ti-edit text-[15px] text-sage" aria-hidden="true" />
               </button>

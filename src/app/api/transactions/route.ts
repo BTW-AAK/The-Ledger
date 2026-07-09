@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
   const accountId = searchParams.get("accountId");
   const categoryId = searchParams.get("categoryId");
   const q = searchParams.get("q");
+  const tag = searchParams.get("tag");
   const limit = Number(searchParams.get("limit") ?? 100);
 
   const transactions = await prisma.transaction.findMany({
@@ -28,6 +29,7 @@ export async function GET(req: NextRequest) {
       ...(accountId ? { accountId } : {}),
       ...(categoryId ? { categoryId } : {}),
       ...(q ? { merchant: { contains: q, mode: "insensitive" } } : {}),
+      ...(tag ? { tags: { has: tag } } : {}),
     },
     orderBy: { date: "desc" },
     take: Math.min(limit, 500),
@@ -42,7 +44,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { accountId, categoryId, date, amount, merchant, notes } = body;
+  const { accountId, categoryId, date, amount, merchant, notes, tags } = body;
 
   if (!accountId || !date || typeof amount !== "number" || !merchant) {
     return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
@@ -60,6 +62,7 @@ export async function POST(req: NextRequest) {
       amount: Math.round(amount),
       merchant,
       notes: notes ?? null,
+      tags: Array.isArray(tags) ? tags : [],
     },
   });
 

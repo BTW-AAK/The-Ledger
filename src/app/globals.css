@@ -26,3 +26,15 @@ textarea,
 button {
   font-family: inherit;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
+  @page {
+    margin: 0.6in;
+  }
+}

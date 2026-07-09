@@ -3,21 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-
-const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: "ti-layout-dashboard" },
-  { href: "/transactions", label: "Transactions", icon: "ti-list" },
-  { href: "/budgets", label: "Budgets", icon: "ti-chart-pie" },
-  { href: "/accounts", label: "Accounts", icon: "ti-building-bank" },
-  { href: "/goals", label: "Goals", icon: "ti-target" },
-  { href: "/investments", label: "Investments", icon: "ti-chart-candle" },
-];
+import { NAV_ITEMS } from "@/lib/nav";
 
 export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="w-[180px] shrink-0 bg-panelDeep border-r border-lineSoft flex flex-col gap-1 p-4 min-h-screen">
+    <div className="hidden md:flex no-print w-[180px] shrink-0 bg-panelDeep border-r border-lineSoft flex-col gap-1 p-4 min-h-screen">
       <div className="font-display text-lg text-paper mb-6 px-2">Ledger</div>
       {NAV_ITEMS.map((item) => {
         const active = pathname === item.href;

@@ -10,7 +10,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (!existing) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
   const body = await req.json();
-  const { accountId, categoryId, date, amount, merchant, notes } = body;
+  const { accountId, categoryId, date, amount, merchant, notes, tags } = body;
 
   const updated = await prisma.transaction.update({
     where: { id: params.id },
@@ -21,6 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       ...(typeof amount === "number" ? { amount: Math.round(amount) } : {}),
       ...(merchant ? { merchant } : {}),
       ...(notes !== undefined ? { notes } : {}),
+      ...(Array.isArray(tags) ? { tags } : {}),
     },
   });
 
