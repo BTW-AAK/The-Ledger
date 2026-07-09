@@ -37,6 +37,7 @@ export default async function TransactionsPage() {
             ? { id: t.category.id, name: t.category.name, icon: t.category.icon, color: t.category.color }
             : null,
           notes: t.notes,
+          tags: t.tags,
         }))}
         accounts={accounts}
         categories={categories}
