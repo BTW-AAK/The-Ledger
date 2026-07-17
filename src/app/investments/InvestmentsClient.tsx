@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { formatCents } from "@/lib/money";
 
-type Account = { id: string; name: string };
+type Account = { id: string; name: string; currency: string };
 type Holding = {
   id: string;
   name: string;
@@ -13,6 +13,9 @@ type Holding = {
   quantity: number;
   costBasis: number;
   currentValue: number;
+  currency: string;
+  currentValueHomeCents: number;
+  costBasisHomeCents: number;
   accountName: string;
   accountId: string;
 };
@@ -22,9 +25,11 @@ const COLORS = ["#C99A4E", "#C1603F", "#5B8266", "#7C8DA6", "#8FA39A"];
 export default function InvestmentsClient({
   holdings,
   accounts,
+  homeCurrency,
 }: {
   holdings: Holding[];
   accounts: Account[];
+  homeCurrency: string;
 }) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
@@ -36,9 +41,11 @@ export default function InvestmentsClient({
   const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
   const [saving, setSaving] = useState(false);
 
-  const totalValue = holdings.reduce((s, h) => s + h.currentValue, 0);
-  const totalCostBasis = holdings.reduce((s, h) => s + h.costBasis, 0);
-  const gainLoss = totalValue - totalCostBasis;
+  // Totals are computed in home currency since holdings can span multiple currencies.
+  const totalValueHome = holdings.reduce((s, h) => s + h.currentValueHomeCents, 0);
+  const totalCostBasisHome = holdings.reduce((s, h) => s + h.costBasisHomeCents, 0);
+  const gainLossHome = totalValueHome - totalCostBasisHome;
+  const selectedAccountCurrency = accounts.find((a) => a.id === accountId)?.currency ?? homeCurrency;
 
   async function handleCreate() {
     const qty = parseFloat(quantity);
@@ -103,23 +110,23 @@ export default function InvestmentsClient({
           <div className="w-[90px] h-[90px] shrink-0">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={holdings} dataKey="currentValue" nameKey="name" innerRadius={28} outerRadius={44} strokeWidth={0}>
+                <Pie data={holdings} dataKey="currentValueHomeCents" nameKey="name" innerRadius={28} outerRadius={44} strokeWidth={0}>
                   {holdings.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip
                   contentStyle={{ background: "#1B2A25", border: "1px solid #2C4038", borderRadius: 8, fontSize: 12, color: "#EDEAE0" }}
-                  formatter={(value: number, name: string) => [formatCents(value), name]}
+                  formatter={(value: number, name: string) => [formatCents(value, homeCurrency), name]}
                 />
               </PieChart>
             </ResponsiveContainer>
           </div>
           <div>
-            <div className="font-mono text-xl text-paper">{formatCents(totalValue)}</div>
-            <div className={`font-mono text-xs mt-1 ${gainLoss >= 0 ? "text-gold" : "text-rust"}`}>
-              {gainLoss >= 0 ? "+" : ""}
-              {formatCents(gainLoss)} all-time
+            <div className="font-mono text-xl text-paper">{formatCents(totalValueHome, homeCurrency)}</div>
+            <div className={`font-mono text-xs mt-1 ${gainLossHome >= 0 ? "text-gold" : "text-rust"}`}>
+              {gainLossHome >= 0 ? "+" : ""}
+              {formatCents(gainLossHome, homeCurrency)} all-time
             </div>
           </div>
         </div>
@@ -158,7 +165,9 @@ export default function InvestmentsClient({
               />
             </div>
             <div className="flex-1">
-              <div className="text-[11px] text-sage tracking-wide mb-1.5">Cost basis</div>
+              <div className="text-[11px] text-sage tracking-wide mb-1.5">
+                Cost basis ({selectedAccountCurrency})
+              </div>
               <input
                 inputMode="decimal"
                 value={costBasis}
@@ -167,7 +176,9 @@ export default function InvestmentsClient({
               />
             </div>
             <div className="flex-1">
-              <div className="text-[11px] text-sage tracking-wide mb-1.5">Current value</div>
+              <div className="text-[11px] text-sage tracking-wide mb-1.5">
+                Current value ({selectedAccountCurrency})
+              </div>
               <input
                 inputMode="decimal"
                 value={currentValue}
@@ -206,9 +217,11 @@ export default function InvestmentsClient({
           <div key={h.id} className="flex items-center gap-3 px-4 py-3 border-t border-lineSoft first:border-t-0 group">
             <div className="flex-1 min-w-0">
               <div className="text-sm text-paper truncate">{h.name}{h.ticker ? ` (${h.ticker})` : ""}</div>
-              <div className="text-[11px] text-sage truncate">{h.accountName} · {h.quantity} shares</div>
+              <div className="text-[11px] text-sage truncate">
+                {h.accountName} · {h.quantity} shares{h.currency !== homeCurrency ? ` · ${h.currency}` : ""}
+              </div>
             </div>
-            <div className="font-mono text-sm text-paper shrink-0">{formatCents(h.currentValue)}</div>
+            <div className="font-mono text-sm text-paper shrink-0">{formatCents(h.currentValue, h.currency)}</div>
             <button onClick={() => handleDelete(h.id)} className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0" aria-label="Remove holding">
               <i className="ti ti-trash text-[14px] text-sage" aria-hidden="true" />
             </button>

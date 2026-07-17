@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { name, type, startingBalance } = body;
+  const { name, type, startingBalance, currency } = body;
 
   if (!name || !type) {
     return NextResponse.json({ error: "Name and type are required." }, { status: 400 });
@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
       userId,
       name,
       type,
+      currency: currency ?? "USD",
       startingBalance: Math.round(startingBalance ?? 0),
     },
   });

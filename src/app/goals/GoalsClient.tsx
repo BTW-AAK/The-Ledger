@@ -13,7 +13,15 @@ type Goal = {
   targetDate: string | null;
 };
 
-export default function GoalsClient({ goals, accounts }: { goals: Goal[]; accounts: Account[] }) {
+export default function GoalsClient({
+  goals,
+  accounts,
+  homeCurrency,
+}: {
+  goals: Goal[];
+  accounts: Account[];
+  homeCurrency: string;
+}) {
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
   const [name, setName] = useState("");
@@ -83,7 +91,7 @@ export default function GoalsClient({ goals, accounts }: { goals: Goal[]; accoun
                 inputMode="decimal"
                 value={target}
                 onChange={(e) => setTarget(e.target.value.replace(/[^0-9.]/g, ""))}
-                placeholder="10,000"
+                placeholder={`10,000 ${homeCurrency}`}
                 className="w-full bg-ink border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none focus:border-gold font-mono"
               />
             </div>
@@ -131,7 +139,7 @@ export default function GoalsClient({ goals, accounts }: { goals: Goal[]; accoun
                 <span className="text-sm text-paper truncate min-w-0">{g.name}</span>
                 <div className="flex items-center gap-3 shrink-0">
                   <span className="font-mono text-xs text-sage">
-                    {formatCents(g.currentAmount)} / {formatCents(g.targetAmount)}
+                    {formatCents(g.currentAmount, homeCurrency)} / {formatCents(g.targetAmount, homeCurrency)}
                   </span>
                   <button
                     onClick={() => handleDelete(g.id)}

@@ -3,7 +3,7 @@ import { getCurrentUserId } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/AppShell";
 import BudgetsClient from "./BudgetsClient";
-import { getBudgetProgress } from "@/lib/analytics";
+import { getBudgetProgress, getUserCurrencyContext } from "@/lib/analytics";
 import { currentMonthKey } from "@/lib/money";
 
 export default async function BudgetsPage() {
@@ -12,14 +12,15 @@ export default async function BudgetsPage() {
 
   const month = currentMonthKey();
 
-  const [categories, progress] = await Promise.all([
+  const [categories, progress, { homeCurrency }] = await Promise.all([
     prisma.category.findMany({ where: { userId, kind: { not: "INCOME" } }, orderBy: { name: "asc" } }),
     getBudgetProgress(userId, month),
+    getUserCurrencyContext(userId),
   ]);
 
   return (
     <AppShell>
-      <BudgetsClient categories={categories} progress={progress} month={month} />
+      <BudgetsClient categories={categories} progress={progress} month={month} homeCurrency={homeCurrency} />
     </AppShell>
   );
 }

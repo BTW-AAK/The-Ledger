@@ -4,13 +4,13 @@ import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/AppShell";
 import DashboardView from "@/components/DashboardView";
 import {
-  getAccountBalances,
   getCurrentNetWorth,
   getNetWorthSeries,
   getSpendingByCategory,
   getIncomeExpense,
   getBudgetProgress,
   getMerchantMemory,
+  getUserCurrencyContext,
 } from "@/lib/analytics";
 import { currentMonthKey } from "@/lib/money";
 
@@ -31,6 +31,7 @@ export default async function DashboardPage() {
     categories,
     templates,
     merchantMemory,
+    { homeCurrency },
   ] = await Promise.all([
     getCurrentNetWorth(userId),
     getNetWorthSeries(userId, 6),
@@ -41,12 +42,13 @@ export default async function DashboardPage() {
       where: { userId },
       orderBy: { date: "desc" },
       take: 8,
-      include: { category: true },
+      include: { category: true, account: true },
     }),
     prisma.account.findMany({ where: { userId, archived: false } }),
     prisma.category.findMany({ where: { userId }, orderBy: { name: "asc" } }),
     prisma.recurringTemplate.findMany({ where: { userId, active: true } }),
     getMerchantMemory(userId),
+    getUserCurrencyContext(userId),
   ]);
 
   const savingsRatePct =
@@ -61,6 +63,7 @@ export default async function DashboardPage() {
   return (
     <AppShell>
       <DashboardView
+        homeCurrency={homeCurrency}
         netWorthCents={netWorthCents}
         netWorthDeltaCents={netWorthDeltaCents}
         netWorthSeries={netWorthSeries}
@@ -74,6 +77,7 @@ export default async function DashboardPage() {
           merchant: t.merchant,
           amount: t.amount,
           date: t.date.toISOString(),
+          currency: t.account.currency,
           category: t.category
             ? { name: t.category.name, icon: t.category.icon, color: t.category.color }
             : null,

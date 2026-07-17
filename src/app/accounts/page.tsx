@@ -2,13 +2,16 @@ import { redirect } from "next/navigation";
 import { getCurrentUserId } from "@/lib/session";
 import AppShell from "@/components/AppShell";
 import AccountsClient from "./AccountsClient";
-import { getAccountBalances } from "@/lib/analytics";
+import { getAccountBalances, getUserCurrencyContext } from "@/lib/analytics";
 
 export default async function AccountsPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const accounts = await getAccountBalances(userId);
+  const [accounts, { homeCurrency, rates }] = await Promise.all([
+    getAccountBalances(userId),
+    getUserCurrencyContext(userId),
+  ]);
 
   return (
     <AppShell>
@@ -17,9 +20,13 @@ export default async function AccountsPage() {
           id: a.id,
           name: a.name,
           type: a.type,
+          currency: a.currency,
           startingBalance: a.startingBalance,
           balanceCents: a.balanceCents,
+          balanceHomeCents: a.balanceHomeCents,
         }))}
+        homeCurrency={homeCurrency}
+        ratesKnown={Array.from(rates.keys())}
       />
     </AppShell>
   );

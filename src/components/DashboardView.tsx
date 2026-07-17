@@ -10,7 +10,7 @@ import SpendingDonut from "./SpendingDonut";
 import BudgetBar from "./BudgetBar";
 import { formatCents, formatSignedCents } from "@/lib/money";
 
-type Account = { id: string; name: string };
+type Account = { id: string; name: string; currency: string };
 type Category = { id: string; name: string; icon: string; color: string };
 type RecurringTemplate = {
   id: string;
@@ -22,6 +22,7 @@ type RecurringTemplate = {
 };
 
 export default function DashboardView({
+  homeCurrency,
   netWorthCents,
   netWorthDeltaCents,
   netWorthSeries,
@@ -36,6 +37,7 @@ export default function DashboardView({
   templates,
   merchantMemory,
 }: {
+  homeCurrency: string;
   netWorthCents: number;
   netWorthDeltaCents: number;
   netWorthSeries: { date: string; netWorthCents: number }[];
@@ -49,6 +51,7 @@ export default function DashboardView({
     merchant: string;
     amount: number;
     date: string;
+    currency: string;
     category: { name: string; icon: string; color: string } | null;
   }[];
   accounts: Account[];
@@ -58,6 +61,7 @@ export default function DashboardView({
 }) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
+  const hasMultipleCurrencies = accounts.some((a) => a.currency !== homeCurrency);
 
   return (
     <div className="flex flex-col gap-5 max-w-[900px]">
@@ -65,6 +69,7 @@ export default function DashboardView({
         <div className="text-xs text-sage">
           Net worth ·{" "}
           {new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+          {hasMultipleCurrencies ? ` · shown in ${homeCurrency}` : ""}
         </div>
         <button
           onClick={() => setModalOpen(true)}
@@ -77,11 +82,11 @@ export default function DashboardView({
 
       <div>
         <div className="font-display text-[40px] text-paper leading-none">
-          {formatCents(netWorthCents)}
+          {formatCents(netWorthCents, homeCurrency)}
         </div>
         <div className="flex items-baseline gap-1.5 mt-1.5">
           <span className={`font-mono text-sm ${netWorthDeltaCents >= 0 ? "text-gold" : "text-rust"}`}>
-            {formatSignedCents(netWorthDeltaCents)}
+            {formatSignedCents(netWorthDeltaCents, homeCurrency)}
           </span>
           <span className="text-sm text-sage">since last month</span>
         </div>
@@ -90,18 +95,18 @@ export default function DashboardView({
         </div>
       </div>
 
-      <NetWorthChart data={netWorthSeries} />
+      <NetWorthChart data={netWorthSeries} currency={homeCurrency} />
 
       <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-        <MetricCard label="Income" value={formatCents(incomeCents)} />
-        <MetricCard label="Expenses" value={formatCents(expensesCents)} />
+        <MetricCard label="Income" value={formatCents(incomeCents, homeCurrency)} />
+        <MetricCard label="Expenses" value={formatCents(expensesCents, homeCurrency)} />
         <MetricCard label="Savings rate" value={`${savingsRatePct}%`} valueClassName="text-gold" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
         <div className="bg-panel rounded-[10px] p-4">
           <div className="text-sm text-paper mb-2.5">Spending by category</div>
-          <SpendingDonut data={spendingByCategory.map((c) => ({ ...c }))} />
+          <SpendingDonut data={spendingByCategory.map((c) => ({ ...c }))} currency={homeCurrency} />
         </div>
         <div className="bg-panel rounded-[10px] p-4">
           <div className="text-sm text-paper mb-2.5">Budgets</div>
@@ -118,6 +123,7 @@ export default function DashboardView({
                   spentCents={b.spentCents}
                   budgetCents={b.budgetCents}
                   color={b.color}
+                  currency={homeCurrency}
                 />
               ))}
             </div>
@@ -148,12 +154,13 @@ export default function DashboardView({
                 <div className="text-[11px] text-sage">
                   {t.category?.name ?? "Uncategorized"} ·{" "}
                   {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {t.currency !== homeCurrency ? ` · ${t.currency}` : ""}
                 </div>
               </div>
               <div
-                className={`font-mono text-sm ${t.amount > 0 ? "text-gold" : "text-paper"}`}
+                className={`font-mono text-sm shrink-0 ${t.amount > 0 ? "text-gold" : "text-paper"}`}
               >
-                {formatSignedCents(t.amount)}
+                {formatSignedCents(t.amount, t.currency)}
               </div>
             </div>
           ))}
@@ -173,6 +180,7 @@ export default function DashboardView({
         categories={categories}
         templates={templates}
         merchantMemory={merchantMemory}
+        homeCurrency={homeCurrency}
       />
     </div>
   );

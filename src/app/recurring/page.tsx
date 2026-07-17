@@ -3,12 +3,13 @@ import { getCurrentUserId } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/AppShell";
 import RecurringClient from "./RecurringClient";
+import { getUserCurrencyContext } from "@/lib/analytics";
 
 export default async function RecurringPage() {
   const userId = await getCurrentUserId();
   if (!userId) redirect("/login");
 
-  const [templates, accounts, categories] = await Promise.all([
+  const [templates, accounts, categories, { homeCurrency }] = await Promise.all([
     prisma.recurringTemplate.findMany({
       where: { userId, active: true },
       orderBy: { nextDueDate: "asc" },
@@ -16,6 +17,7 @@ export default async function RecurringPage() {
     }),
     prisma.account.findMany({ where: { userId, archived: false } }),
     prisma.category.findMany({ where: { userId }, orderBy: { name: "asc" } }),
+    getUserCurrencyContext(userId),
   ]);
 
   return (
@@ -26,6 +28,7 @@ export default async function RecurringPage() {
           name: t.name,
           merchant: t.merchant,
           amount: t.amount,
+          currency: t.account.currency,
           cadence: t.cadence,
           nextDueDate: t.nextDueDate.toISOString(),
           accountId: t.accountId,
@@ -37,6 +40,7 @@ export default async function RecurringPage() {
         }))}
         accounts={accounts}
         categories={categories}
+        homeCurrency={homeCurrency}
       />
     </AppShell>
   );

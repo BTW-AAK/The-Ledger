@@ -7,6 +7,7 @@ export const NAV_ITEMS = [
   { href: "/investments", label: "Investments", icon: "ti-chart-candle" },
   { href: "/recurring", label: "Bills", icon: "ti-calendar-repeat" },
   { href: "/reports", label: "Reports", icon: "ti-file-text" },
+  { href: "/settings", label: "Settings", icon: "ti-settings" },
 ];
 
 /** Subset shown in the mobile bottom nav - keep this short, the rest is reachable via the command palette. */

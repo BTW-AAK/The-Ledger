@@ -12,6 +12,7 @@ model User {
   email        String   @unique
   name         String?
   passwordHash String
+  homeCurrency String   @default("USD")
   createdAt    DateTime @default(now())
 
   accounts            Account[]
@@ -21,6 +22,7 @@ model User {
   goals               Goal[]
   recurringTemplates  RecurringTemplate[]
   holdings            Holding[]
+  currencyRates       CurrencyRate[]
 }
 
 enum AccountType {
@@ -38,6 +40,7 @@ model Account {
   user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   name            String
   type            AccountType
+  currency        String      @default("USD")
   // Stored in cents. For CREDIT_CARD/LOAN, positive startingBalance means money owed.
   startingBalance Int         @default(0)
   archived        Boolean     @default(false)
@@ -158,4 +161,18 @@ model Holding {
   costBasis    Int
   currentValue Int
   updatedAt    DateTime @updatedAt
+}
+
+/// How many units of the user's home currency one unit of `currency` is worth.
+/// e.g. if home currency is USD and currency is "EUR" with rateToHome 1.08,
+/// that means 1 EUR = 1.08 USD. The home currency itself is never stored here (implicit rate of 1).
+model CurrencyRate {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currency   String
+  rateToHome Float
+  updatedAt  DateTime @updatedAt
+
+  @@unique([userId, currency])
 }

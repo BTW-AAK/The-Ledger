@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getCurrencySymbol } from "@/lib/currency";
 
-type Account = { id: string; name: string };
+type Account = { id: string; name: string; currency: string };
 type Category = { id: string; name: string; icon: string; color: string };
 type RecurringTemplate = {
   id: string;
@@ -35,6 +36,7 @@ export default function TransactionModal({
   templates,
   merchantMemory,
   initial,
+  homeCurrency = "USD",
 }: {
   open: boolean;
   onClose: () => void;
@@ -44,6 +46,7 @@ export default function TransactionModal({
   templates: RecurringTemplate[];
   merchantMemory: MerchantMemory;
   initial?: TransactionDraft;
+  homeCurrency?: string;
 }) {
   const today = new Date().toISOString().slice(0, 10);
 
@@ -60,6 +63,11 @@ export default function TransactionModal({
   const [tagInput, setTagInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const selectedAccountCurrency = useMemo(
+    () => accounts.find((a) => a.id === accountId)?.currency ?? homeCurrency,
+    [accounts, accountId, homeCurrency]
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -192,7 +200,7 @@ export default function TransactionModal({
 
         <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-1">
-            <span className="font-mono text-2xl text-sage">$</span>
+            <span className="font-mono text-2xl text-sage">{getCurrencySymbol(selectedAccountCurrency)}</span>
             <input
               autoFocus
               inputMode="decimal"
@@ -202,6 +210,9 @@ export default function TransactionModal({
               className="font-mono text-4xl bg-transparent text-paper text-center w-[160px] outline-none"
             />
           </div>
+          {selectedAccountCurrency !== homeCurrency && (
+            <div className="text-[11px] text-sage mt-1">in {selectedAccountCurrency}</div>
+          )}
         </div>
 
         {templates.length > 0 && (

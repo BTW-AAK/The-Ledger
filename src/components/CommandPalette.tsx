@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { NAV_ITEMS } from "@/lib/nav";
 import TransactionModal from "./TransactionModal";
 
-type Account = { id: string; name: string };
+type Account = { id: string; name: string; currency: string };
 type Category = { id: string; name: string; icon: string; color: string };
 type RecurringTemplate = {
   id: string;
@@ -20,6 +20,7 @@ type QuickAddContext = {
   categories: Category[];
   templates: RecurringTemplate[];
   merchantMemory: { merchant: string; categoryId: string }[];
+  homeCurrency: string;
 };
 
 type Command = {
@@ -192,6 +193,7 @@ export default function CommandPalette({
           categories={context.categories}
           templates={context.templates}
           merchantMemory={context.merchantMemory}
+          homeCurrency={context.homeCurrency}
         />
       )}
     </>

@@ -13,8 +13,10 @@ import { formatCents } from "@/lib/money";
 
 export default function NetWorthChart({
   data,
+  currency = "USD",
 }: {
   data: { date: string; netWorthCents: number }[];
+  currency?: string;
 }) {
   return (
     <div className="h-[200px] w-full">
@@ -42,7 +44,7 @@ export default function NetWorthChart({
               fontSize: 12,
               color: "#EDEAE0",
             }}
-            formatter={(value: number) => [formatCents(value), "Net worth"]}
+            formatter={(value: number) => [formatCents(value, currency), "Net worth"]}
           />
           <Area
             type="monotone"

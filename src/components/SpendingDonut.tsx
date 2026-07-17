@@ -5,8 +5,10 @@ import { formatCents } from "@/lib/money";
 
 export default function SpendingDonut({
   data,
+  currency = "USD",
 }: {
   data: { name: string; amountCents: number; color: string }[];
+  currency?: string;
 }) {
   if (data.length === 0) {
     return <div className="text-sm text-sage py-8 text-center">No spending logged yet this month.</div>;
@@ -37,7 +39,7 @@ export default function SpendingDonut({
                 fontSize: 12,
                 color: "#EDEAE0",
               }}
-              formatter={(value: number, name: string) => [formatCents(value), name]}
+              formatter={(value: number, name: string) => [formatCents(value, currency), name]}
             />
           </PieChart>
         </ResponsiveContainer>
@@ -50,7 +52,7 @@ export default function SpendingDonut({
               style={{ backgroundColor: entry.color }}
             />
             <span className="text-sage truncate">{entry.name}</span>
-            <span className="font-mono text-paper ml-auto">{formatCents(entry.amountCents)}</span>
+            <span className="font-mono text-paper ml-auto">{formatCents(entry.amountCents, currency)}</span>
           </div>
         ))}
       </div>

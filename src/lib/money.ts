@@ -8,21 +8,21 @@ export function dollarsToCents(dollars: number): number {
   return Math.round(dollars * 100);
 }
 
-export function formatCents(cents: number): string {
-  const dollars = centsToDollars(cents);
+export function formatCents(cents: number, currency: string = "USD"): string {
+  const amount = centsToDollars(cents);
   const formatted = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD",
+    currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(Math.abs(dollars));
-  return dollars < 0 ? `-${formatted}` : formatted;
+  }).format(Math.abs(amount));
+  return amount < 0 ? `-${formatted}` : formatted;
 }
 
-export function formatSignedCents(cents: number): string {
-  const dollars = centsToDollars(cents);
-  const formatted = formatCents(Math.abs(cents));
-  return dollars >= 0 ? `+${formatted}` : `-${formatted}`;
+export function formatSignedCents(cents: number, currency: string = "USD"): string {
+  const amount = centsToDollars(cents);
+  const formatted = formatCents(Math.abs(cents), currency);
+  return amount >= 0 ? `+${formatted}` : `-${formatted}`;
 }
 
 export function currentMonthKey(date: Date = new Date()): string {

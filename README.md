@@ -137,3 +137,23 @@ No database migration needed for this batch — the schema didn't change.
 - **Tags** — free-form tags on any transaction, with a filter dropdown on the Transactions page.
 - **Reports page** (`/reports`) — a printable monthly report (income/expenses, category breakdown, budget performance, largest transactions, net worth). Click **Export PDF**, then choose "Save as PDF" in your browser's print dialog.
 - **Mobile layout fixes** — the sidebar now collapses into a bottom tab bar below the `md` breakpoint instead of squeezing page content into a narrow column, which was the cause of text overflowing on phones. Grids and forms across every page now stack vertically on small screens instead of cramming side by side.
+
+---
+
+## 8. Multi-currency support
+
+**This one needs a database migration** — run this before pulling the new code into production:
+
+```
+npx prisma migrate dev --name add_currency_support
+```
+
+Then push/deploy as usual. On Vercel, remember `migrate deploy` needs to run against your production database once (same as the initial setup in section 3/4) — the easiest way is running `npx prisma migrate deploy` locally with your `.env` pointed at the production `DATABASE_URL`.
+
+**How it works:**
+- Every account has its own currency, set when you create it (defaults to your home currency).
+- You pick one **home currency** in `/settings` — net worth, budgets, goals, and reports are always shown in this currency, since those aggregate across accounts.
+- Transactions are always entered and stored in their account's native currency — no conversion happens at entry time, so your data stays exact.
+- Exchange rates convert foreign-currency accounts into your home currency for those aggregate views. Go to `/settings` and click **Refresh rates** to pull live rates from Frankfurter (a free, keyless ECB-rate API), or enter a rate manually if you'd rather control it yourself.
+- If a currency you're using doesn't have a rate yet, the app treats it as 1:1 with your home currency rather than crashing — you'll see a warning on the Accounts page until you set a real rate.
+- One known simplification: net worth history (the 6-month chart) uses *today's* exchange rate for all past months, since historical rates aren't tracked. For currencies that move a lot against your home currency, older points on that chart will be slightly off. Everything else (current balances, monthly reports, budgets) uses up-to-date rates.

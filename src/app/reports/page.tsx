@@ -3,8 +3,15 @@ import { getCurrentUserId } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/AppShell";
 import ReportClient from "./ReportClient";
-import { getSpendingByCategory, getIncomeExpense, getBudgetProgress, getCurrentNetWorth } from "@/lib/analytics";
+import {
+  getSpendingByCategory,
+  getIncomeExpense,
+  getBudgetProgress,
+  getCurrentNetWorth,
+  getUserCurrencyContext,
+} from "@/lib/analytics";
 import { currentMonthKey } from "@/lib/money";
+import { convertToHomeCents } from "@/lib/currency";
 
 export default async function ReportsPage({
   searchParams,
@@ -19,36 +26,48 @@ export default async function ReportsPage({
   const start = new Date(year, mo - 1, 1);
   const end = new Date(year, mo, 0, 23, 59, 59);
 
-  const [spendingByCategory, { incomeCents, expensesCents }, budgetProgress, netWorthCents, topTransactions] =
-    await Promise.all([
-      getSpendingByCategory(userId, month),
-      getIncomeExpense(userId, month),
-      getBudgetProgress(userId, month),
-      getCurrentNetWorth(userId),
-      prisma.transaction.findMany({
-        where: { userId, date: { gte: start, lte: end } },
-        orderBy: { amount: "asc" },
-        take: 10,
-        include: { category: true },
-      }),
-    ]);
+  const [
+    spendingByCategory,
+    { incomeCents, expensesCents },
+    budgetProgress,
+    netWorthCents,
+    monthTransactions,
+    { homeCurrency, rates },
+  ] = await Promise.all([
+    getSpendingByCategory(userId, month),
+    getIncomeExpense(userId, month),
+    getBudgetProgress(userId, month),
+    getCurrentNetWorth(userId),
+    prisma.transaction.findMany({
+      where: { userId, date: { gte: start, lte: end } },
+      include: { category: true, account: true },
+    }),
+    getUserCurrencyContext(userId),
+  ]);
+
+  // Sort by home-currency value, not raw amount - raw amounts aren't comparable across currencies.
+  const topTransactions = monthTransactions
+    .map((t) => ({
+      id: t.id,
+      merchant: t.merchant,
+      amount: convertToHomeCents(t.amount, t.account.currency, homeCurrency, rates),
+      date: t.date.toISOString(),
+      categoryName: t.category?.name ?? "Uncategorized",
+    }))
+    .sort((a, b) => a.amount - b.amount)
+    .slice(0, 10);
 
   return (
     <AppShell>
       <ReportClient
         month={month}
+        homeCurrency={homeCurrency}
         spendingByCategory={spendingByCategory}
         incomeCents={incomeCents}
         expensesCents={expensesCents}
         budgetProgress={budgetProgress}
         netWorthCents={netWorthCents}
-        topTransactions={topTransactions.map((t) => ({
-          id: t.id,
-          merchant: t.merchant,
-          amount: t.amount,
-          date: t.date.toISOString(),
-          categoryName: t.category?.name ?? "Uncategorized",
-        }))}
+        topTransactions={topTransactions}
       />
     </AppShell>
   );

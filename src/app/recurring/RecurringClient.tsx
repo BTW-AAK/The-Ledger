@@ -4,14 +4,16 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatCents } from "@/lib/money";
 import { advanceByCadence, CADENCE_LABELS } from "@/lib/cadence";
+import { getCurrencySymbol } from "@/lib/currency";
 
-type Account = { id: string; name: string };
+type Account = { id: string; name: string; currency: string };
 type Category = { id: string; name: string; icon: string; color: string };
 type Template = {
   id: string;
   name: string;
   merchant: string | null;
   amount: number;
+  currency: string;
   cadence: "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "YEARLY";
   nextDueDate: string;
   accountId: string;
@@ -34,10 +36,12 @@ export default function RecurringClient({
   templates,
   accounts,
   categories,
+  homeCurrency,
 }: {
   templates: Template[];
   accounts: Account[];
   categories: Category[];
+  homeCurrency: string;
 }) {
   const router = useRouter();
   const [formMode, setFormMode] = useState<"none" | "create" | string>("none");
@@ -49,6 +53,8 @@ export default function RecurringClient({
   const [cadence, setCadence] = useState<Template["cadence"]>("MONTHLY");
   const [nextDueDate, setNextDueDate] = useState(new Date().toISOString().slice(0, 10));
   const [saving, setSaving] = useState(false);
+
+  const selectedAccountCurrency = accounts.find((a) => a.id === accountId)?.currency ?? homeCurrency;
 
   const dueSoon = useMemo(
     () => templates.filter((t) => daysUntil(t.nextDueDate) <= 7).sort((a, b) => daysUntil(a.nextDueDate) - daysUntil(b.nextDueDate)),
@@ -186,13 +192,18 @@ export default function RecurringClient({
           </div>
           <div className="flex flex-col sm:flex-row gap-3 mb-3">
             <div className="flex-1 min-w-0">
-              <div className="text-[11px] text-sage tracking-wide mb-1.5">Amount</div>
-              <input
-                inputMode="decimal"
-                value={amountInput}
-                onChange={(e) => setAmountInput(e.target.value.replace(/[^0-9.]/g, ""))}
-                className="w-full bg-ink border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none focus:border-gold font-mono"
-              />
+              <div className="text-[11px] text-sage tracking-wide mb-1.5">
+                Amount ({selectedAccountCurrency})
+              </div>
+              <div className="flex items-center gap-1.5 bg-ink border border-line rounded-lg px-3 py-2 focus-within:border-gold">
+                <span className="font-mono text-sm text-sage">{getCurrencySymbol(selectedAccountCurrency)}</span>
+                <input
+                  inputMode="decimal"
+                  value={amountInput}
+                  onChange={(e) => setAmountInput(e.target.value.replace(/[^0-9.]/g, ""))}
+                  className="flex-1 min-w-0 bg-transparent text-sm text-paper outline-none font-mono"
+                />
+              </div>
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[11px] text-sage tracking-wide mb-1.5">Cadence</div>
@@ -284,7 +295,7 @@ export default function RecurringClient({
                       {days <= 0 ? "Due today" : days === 1 ? "Due tomorrow" : `Due in ${days} days`}
                     </div>
                   </div>
-                  <div className="font-mono text-sm text-paper shrink-0">{formatCents(t.amount)}</div>
+                  <div className="font-mono text-sm text-paper shrink-0">{formatCents(t.amount, t.currency)}</div>
                   <button
                     onClick={() => handleLogNow(t)}
                     className="text-xs bg-gold text-goldText px-2.5 py-1.5 rounded-lg shrink-0 whitespace-nowrap"
@@ -343,7 +354,7 @@ export default function RecurringClient({
                 {new Date(t.nextDueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </div>
             </div>
-            <div className="font-mono text-sm text-paper shrink-0">{formatCents(t.amount)}</div>
+            <div className="font-mono text-sm text-paper shrink-0">{formatCents(t.amount, t.currency)}</div>
             <div className="flex gap-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
               <button onClick={() => openEditForm(t)} aria-label="Edit">
                 <i className="ti ti-edit text-[15px] text-sage" aria-hidden="true" />

@@ -12,10 +12,12 @@ export default function BudgetsClient({
   categories,
   progress,
   month,
+  homeCurrency,
 }: {
   categories: Category[];
   progress: Progress[];
   month: string;
+  homeCurrency: string;
 }) {
   const router = useRouter();
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -62,7 +64,7 @@ export default function BudgetsClient({
         </div>
       </div>
       <div className="text-sm text-sage mb-5">
-        {formatCents(totalSpent)} spent of {formatCents(totalBudget)} budgeted
+        {formatCents(totalSpent, homeCurrency)} spent of {formatCents(totalBudget, homeCurrency)} budgeted
       </div>
 
       <div className="flex flex-col gap-4">
@@ -88,7 +90,7 @@ export default function BudgetsClient({
                   <input
                     autoFocus
                     inputMode="decimal"
-                    placeholder="Monthly amount"
+                    placeholder={`Monthly amount (${homeCurrency})`}
                     value={amountInput}
                     onChange={(e) => setAmountInput(e.target.value.replace(/[^0-9.]/g, ""))}
                     className="flex-1 bg-ink border border-line rounded-lg px-3 py-1.5 text-sm text-paper outline-none focus:border-gold font-mono"
@@ -116,7 +118,7 @@ export default function BudgetsClient({
                   </button>
                 </div>
               ) : p ? (
-                <BudgetBar name="" spentCents={p.spentCents} budgetCents={p.budgetCents} color={c.color} />
+                <BudgetBar name="" spentCents={p.spentCents} budgetCents={p.budgetCents} color={c.color} currency={homeCurrency} />
               ) : (
                 <div className="text-xs text-sage">No budget set for this month.</div>
               )}

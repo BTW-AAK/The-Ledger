@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import TransactionModal, { TransactionDraft } from "@/components/TransactionModal";
 import { formatSignedCents } from "@/lib/money";
 
-type Account = { id: string; name: string };
+type Account = { id: string; name: string; currency: string };
 type Category = { id: string; name: string; icon: string; color: string };
 type RecurringTemplate = {
   id: string;
@@ -22,6 +22,7 @@ type Txn = {
   date: string;
   accountId: string;
   accountName: string;
+  currency: string;
   categoryId: string | null;
   category: { id: string; name: string; icon: string; color: string } | null;
   notes: string | null;
@@ -34,12 +35,14 @@ export default function TransactionsClient({
   categories,
   templates,
   merchantMemory,
+  homeCurrency,
 }: {
   initialTransactions: Txn[];
   accounts: Account[];
   categories: Category[];
   templates: RecurringTemplate[];
   merchantMemory: { merchant: string; categoryId: string }[];
+  homeCurrency: string;
 }) {
   const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
@@ -178,6 +181,7 @@ export default function TransactionsClient({
               <div className="text-[11px] text-sage truncate">
                 {t.category?.name ?? "Uncategorized"} · {t.accountName} ·{" "}
                 {new Date(t.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                {t.currency !== homeCurrency ? ` · ${t.currency}` : ""}
               </div>
               {t.tags.length > 0 && (
                 <div className="flex gap-1 mt-1 flex-wrap">
@@ -195,7 +199,7 @@ export default function TransactionsClient({
             <div
               className={`font-mono text-sm shrink-0 ${t.amount > 0 ? "text-gold" : "text-paper"}`}
             >
-              {formatSignedCents(t.amount)}
+              {formatSignedCents(t.amount, t.currency)}
             </div>
             <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
               <button onClick={() => openEdit(t)} aria-label="Edit">
@@ -221,6 +225,7 @@ export default function TransactionsClient({
         templates={templates}
         merchantMemory={merchantMemory}
         initial={editDraft}
+        homeCurrency={homeCurrency}
       />
     </div>
   );

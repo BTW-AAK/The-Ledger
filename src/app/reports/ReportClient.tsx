@@ -15,6 +15,7 @@ function shiftMonth(month: string, delta: number): string {
 
 export default function ReportClient({
   month,
+  homeCurrency,
   spendingByCategory,
   incomeCents,
   expensesCents,
@@ -23,6 +24,7 @@ export default function ReportClient({
   topTransactions,
 }: {
   month: string;
+  homeCurrency: string;
   spendingByCategory: CategorySpend[];
   incomeCents: number;
   expensesCents: number;
@@ -72,22 +74,22 @@ export default function ReportClient({
           <div className="font-display text-2xl">Ledger</div>
           <div className="text-sm text-[#6B6B63]">Monthly report</div>
         </div>
-        <div className="text-sm text-[#6B6B63] mb-6">{monthLabel}</div>
+        <div className="text-sm text-[#6B6B63] mb-6">{monthLabel} · amounts in {homeCurrency}</div>
 
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div>
             <div className="text-xs text-[#6B6B63] mb-1">Income</div>
-            <div className="font-mono text-lg">{formatCents(incomeCents)}</div>
+            <div className="font-mono text-lg">{formatCents(incomeCents, homeCurrency)}</div>
           </div>
           <div>
             <div className="text-xs text-[#6B6B63] mb-1">Expenses</div>
-            <div className="font-mono text-lg">{formatCents(expensesCents)}</div>
+            <div className="font-mono text-lg">{formatCents(expensesCents, homeCurrency)}</div>
           </div>
           <div>
             <div className="text-xs text-[#6B6B63] mb-1">Net</div>
             <div className={`font-mono text-lg ${net >= 0 ? "text-[#7A5A1E]" : "text-[#9C3E24]"}`}>
               {net >= 0 ? "+" : ""}
-              {formatCents(net)}
+              {formatCents(net, homeCurrency)}
             </div>
           </div>
         </div>
@@ -103,7 +105,7 @@ export default function ReportClient({
               <div key={c.name} className="flex items-center gap-2 py-1.5 text-sm">
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
                 <span className="flex-1">{c.name}</span>
-                <span className="font-mono">{formatCents(c.amountCents)}</span>
+                <span className="font-mono">{formatCents(c.amountCents, homeCurrency)}</span>
               </div>
             ))}
           </div>
@@ -122,7 +124,7 @@ export default function ReportClient({
                 <div key={b.id} className="flex items-center gap-2 py-1.5 text-sm">
                   <span className="flex-1">{b.name}</span>
                   <span className={`font-mono ${over ? "text-[#9C3E24]" : ""}`}>
-                    {formatCents(b.spentCents)} / {formatCents(b.budgetCents)}
+                    {formatCents(b.spentCents, homeCurrency)} / {formatCents(b.budgetCents, homeCurrency)}
                   </span>
                 </div>
               );
@@ -138,7 +140,7 @@ export default function ReportClient({
             <div key={t.id} className="flex items-center gap-2 py-1.5 text-sm">
               <span className="flex-1 truncate">{t.merchant}</span>
               <span className="text-[#6B6B63] text-xs">{t.categoryName}</span>
-              <span className="font-mono w-[90px] text-right">{formatCents(t.amount)}</span>
+              <span className="font-mono w-[90px] text-right">{formatCents(t.amount, homeCurrency)}</span>
             </div>
           ))}
           {topTransactions.length === 0 && (
@@ -148,7 +150,7 @@ export default function ReportClient({
 
         <div className="border-t border-[#D8D4C6] pt-4 flex justify-between text-sm">
           <span className="text-[#6B6B63]">Net worth as of today</span>
-          <span className="font-mono">{formatCents(netWorthCents)}</span>
+          <span className="font-mono">{formatCents(netWorthCents, homeCurrency)}</span>
         </div>
       </div>
     </div>
