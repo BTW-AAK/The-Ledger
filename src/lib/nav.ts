@@ -3,8 +3,6 @@ export const NAV_ITEMS = [
   { href: "/transactions", label: "Transactions", icon: "ti-list" },
   { href: "/budgets", label: "Budgets", icon: "ti-chart-pie" },
   { href: "/accounts", label: "Accounts", icon: "ti-building-bank" },
-  { href: "/goals", label: "Goals", icon: "ti-target" },
-  { href: "/investments", label: "Investments", icon: "ti-chart-candle" },
   { href: "/recurring", label: "Bills", icon: "ti-calendar-repeat" },
   { href: "/reports", label: "Reports", icon: "ti-file-text" },
   { href: "/settings", label: "Settings", icon: "ti-settings" },

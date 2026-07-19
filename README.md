@@ -1,6 +1,6 @@
 # Ledger
 
-A manually-tracked personal finance app: accounts, transactions, budgets, net worth, goals, and investments — no bank sync, everything entered by hand, built to make that entry as fast as possible.
+A manually-tracked personal finance app: accounts, transactions, budgets, and net worth — no bank sync, everything entered by hand, built to make that entry as fast as possible.
 
 Stack: Next.js 14 (App Router) · PostgreSQL · Prisma · NextAuth (credentials) · Tailwind · Recharts.
 
@@ -100,7 +100,7 @@ From then on, every time you `git push`, Vercel automatically redeploys.
 ## 5. How the app is organized (if you want to look around)
 
 ```
-prisma/schema.prisma     All data models (accounts, transactions, categories, budgets, goals, holdings)
+prisma/schema.prisma     All data models (accounts, transactions, categories, budgets)
 prisma/seed.ts           Creates your login + default categories
 src/lib/                 Database client, auth config, money formatting, analytics queries
 src/components/          Shared UI: sidebar, transaction modal, charts, onboarding tour
@@ -156,7 +156,7 @@ Then push/deploy as usual. On Vercel, remember `migrate deploy` needs to run aga
 
 **How it works:**
 - Every account has its own currency, set when you create it (defaults to your home currency).
-- You pick one **home currency** in `/settings` — net worth, budgets, goals, and reports are always shown in this currency, since those aggregate across accounts.
+- You pick one **home currency** in `/settings` — net worth, budgets, and reports are always shown in this currency, since those aggregate across accounts.
 - Transactions are always entered and stored in their account's native currency — no conversion happens at entry time, so your data stays exact.
 - Exchange rates convert foreign-currency accounts into your home currency for those aggregate views. Go to `/settings` and click **Refresh rates** to pull live rates from Frankfurter (a free, keyless ECB-rate API), or enter a rate manually if you'd rather control it yourself.
 - If a currency you're using doesn't have a rate yet, the app treats it as 1:1 with your home currency rather than crashing — you'll see a warning on the Accounts page until you set a real rate.
@@ -188,3 +188,17 @@ npx prisma migrate dev --name add_onboarding_flag
 A 6-step walkthrough shows automatically the first time someone logs in (new signups and your existing account both start with it unseen, unless you've already run the migration and the column defaulted appropriately for your account — if you want to skip it for your own login, just click through it once). It's skippable at any point, and doesn't block anything else in the app.
 
 To see it again anytime, go to **Settings → Tutorial → Replay**.
+
+---
+
+## 11. Goals and Investments were removed
+
+These two pages, their nav entries, and their API routes (`/api/goals`, `/api/holdings`) have been deleted — they weren't getting used and were just adding clutter.
+
+**No migration needed.** The underlying `Goal` and `Holding` database tables still exist in the schema; they're just no longer read or written by anything in the app. I left them rather than dropping them, since dropping a table is a one-way, data-destroying operation, and there was no upside to doing that automatically. If you want them fully gone (e.g. to tidy up the schema), that's a deliberate follow-up:
+
+```
+npx prisma migrate dev --name drop_goals_and_holdings
+```
+
+after removing the `Goal` and `Holding` models (and the `goals`/`holdings` relation fields on `User` and `Account`) from `prisma/schema.prisma` yourself, or ask me to do it.

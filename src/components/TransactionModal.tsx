@@ -61,6 +61,7 @@ export default function TransactionModal({
   const [notes, setNotes] = useState(initial?.notes ?? "");
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [tagInput, setTagInput] = useState("");
+  const [showMore, setShowMore] = useState(!!initial);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,6 +81,7 @@ export default function TransactionModal({
     setNotes(initial?.notes ?? "");
     setTags(initial?.tags ?? []);
     setTagInput("");
+    setShowMore(!!initial);
     setError(null);
   }, [open, initial]);
 
@@ -274,80 +276,94 @@ export default function TransactionModal({
           </div>
         </div>
 
-        <div className="flex gap-2.5 mb-3.5">
-          <div className="flex-1 min-w-0">
-            <div className="text-[11px] text-sage tracking-wide mb-1.5">Account</div>
-            <select
-              value={accountId}
-              onChange={(e) => setAccountId(e.target.value)}
-              className="w-full min-w-0 bg-ink border border-line rounded-lg px-2.5 py-2 text-sm text-paper outline-none"
-            >
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[11px] text-sage tracking-wide mb-1.5">Date</div>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full min-w-0 bg-ink border border-line rounded-lg px-2.5 py-2 text-sm text-paper outline-none"
-            />
-          </div>
-        </div>
+        <button
+          onClick={() => setShowMore((v) => !v)}
+          className="flex items-center gap-1 text-xs text-sage mb-3.5"
+        >
+          <i className={`ti ${showMore ? "ti-chevron-up" : "ti-chevron-down"} text-[12px]`} aria-hidden="true" />
+          {showMore ? "Hide details" : "More details"}
+        </button>
 
-        <div className="mb-4">
-          <div className="text-[11px] text-sage tracking-wide mb-1.5">Tags</div>
-          <div className="flex items-center gap-1.5 flex-wrap bg-ink border border-line rounded-lg px-2.5 py-2">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-xs bg-lineSoft text-sage rounded-full px-2 py-0.5 flex items-center gap-1"
-              >
-                {tag}
-                <button
-                  onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}
-                  aria-label={`Remove tag ${tag}`}
+        {showMore && (
+          <>
+            <div className="flex gap-2.5 mb-3.5">
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] text-sage tracking-wide mb-1.5">Account</div>
+                <select
+                  value={accountId}
+                  onChange={(e) => setAccountId(e.target.value)}
+                  className="w-full min-w-0 bg-ink border border-line rounded-lg px-2.5 py-2 text-sm text-paper outline-none"
                 >
-                  <i className="ti ti-x text-[10px]" aria-hidden="true" />
-                </button>
-              </span>
-            ))}
-            <input
-              value={tagInput}
-              onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === ",") {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const cleaned = tagInput.trim().toLowerCase().replace(/,/g, "");
-                  if (cleaned && !tags.includes(cleaned)) {
-                    setTags((prev) => [...prev, cleaned]);
-                  }
-                  setTagInput("");
-                } else if (e.key === "Backspace" && !tagInput && tags.length > 0) {
-                  setTags((prev) => prev.slice(0, -1));
-                }
-              }}
-              placeholder={tags.length === 0 ? "e.g. vacation-japan, tax-deductible" : ""}
-              className="flex-1 min-w-[100px] bg-transparent text-sm text-paper outline-none py-0.5"
-            />
-          </div>
-        </div>
+                  {accounts.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-[11px] text-sage tracking-wide mb-1.5">Date</div>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="w-full min-w-0 bg-ink border border-line rounded-lg px-2.5 py-2 text-sm text-paper outline-none"
+                />
+              </div>
+            </div>
 
-        <div className="mb-4">
-          <div className="text-[11px] text-sage tracking-wide mb-1.5">Notes (optional)</div>
-          <input
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Any extra detail"
-            className="w-full bg-ink border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none focus:border-gold"
-          />
-        </div>
+            <div className="mb-3.5">
+              <div className="text-[11px] text-sage tracking-wide mb-1.5">Tags</div>
+              <div className="flex items-center gap-1.5 flex-wrap bg-ink border border-line rounded-lg px-2.5 py-2">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="text-xs bg-lineSoft text-sage rounded-full px-2 py-0.5 flex items-center gap-1"
+                  >
+                    {tag}
+                    <button
+                      onClick={() => setTags((prev) => prev.filter((t) => t !== tag))}
+                      aria-label={`Remove tag ${tag}`}
+                    >
+                      <i className="ti ti-x text-[10px]" aria-hidden="true" />
+                    </button>
+                  </span>
+                ))}
+                <input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const cleaned = tagInput.trim().toLowerCase().replace(/,/g, "");
+                      if (cleaned && !tags.includes(cleaned)) {
+                        setTags((prev) => [...prev, cleaned]);
+                      }
+                      setTagInput("");
+                    } else if (e.key === "Backspace" && !tagInput && tags.length > 0) {
+                      setTags((prev) => prev.slice(0, -1));
+                    }
+                  }}
+                  placeholder={tags.length === 0 ? "e.g. vacation-japan, tax-deductible" : ""}
+                  className="flex-1 min-w-[100px] bg-transparent text-sm text-paper outline-none py-0.5"
+                />
+              </div>
+            </div>
+
+            {initial?.id && (
+              <div className="mb-4">
+                <div className="text-[11px] text-sage tracking-wide mb-1.5">Notes (optional)</div>
+                <input
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Any extra detail"
+                  className="w-full bg-ink border border-line rounded-lg px-3 py-2 text-sm text-paper outline-none focus:border-gold"
+                />
+              </div>
+            )}
+          </>
+        )}
 
         {error && <div className="text-xs text-[#F0C9BC] mb-3">{error}</div>}
 

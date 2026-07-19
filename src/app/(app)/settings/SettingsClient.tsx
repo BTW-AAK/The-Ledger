@@ -100,7 +100,7 @@ export default function SettingsClient({
       <div className="bg-panel rounded-[10px] p-4 mb-5">
         <div className="text-sm text-paper mb-1">Home currency</div>
         <div className="text-xs text-sage mb-3">
-          Net worth, budgets, goals, and reports are all shown in this currency.
+          Net worth, budgets, and reports are all shown in this currency.
         </div>
         <select
           data-tour="home-currency"

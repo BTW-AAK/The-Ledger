@@ -38,18 +38,8 @@ export async function getAccountBalances(userId: string) {
 }
 
 export async function getCurrentNetWorth(userId: string) {
-  const [balances, { homeCurrency, rates }] = await Promise.all([
-    getAccountBalances(userId),
-    getUserCurrencyContext(userId),
-  ]);
-  const holdings = await prisma.holding.findMany({ where: { userId }, include: { account: true } });
-
-  const accountTotal = balances.reduce((s, a) => s + a.balanceHomeCents, 0);
-  const holdingsTotal = holdings.reduce(
-    (s, h) => s + convertToHomeCents(h.currentValue, h.account.currency, homeCurrency, rates),
-    0
-  );
-  return accountTotal + holdingsTotal;
+  const balances = await getAccountBalances(userId);
+  return balances.reduce((s, a) => s + a.balanceHomeCents, 0);
 }
 
 export async function getNetWorthSeries(userId: string, months = 6) {
