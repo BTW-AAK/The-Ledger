@@ -170,3 +170,17 @@ The app now supports self-signup at `/signup` — each person gets their own com
 - If you leave `SIGNUP_CODE` unset, `/signup` is open to anyone who finds the URL — fine if you're confident the URL stays private, but the invite code costs nothing to set up and is the safer default now that this is reachable by more than just you.
 
 Each new signup automatically gets the same default categories your account started with. Your own login (from the original seed script) still works exactly as before — this doesn't change or migrate your existing account.
+
+---
+
+## 10. First-run tutorial
+
+**Needs a migration** (adds a `hasSeenOnboarding` flag to each user):
+
+```
+npx prisma migrate dev --name add_onboarding_flag
+```
+
+A 6-step walkthrough shows automatically the first time someone logs in (new signups and your existing account both start with it unseen, unless you've already run the migration and the column defaulted appropriately for your account — if you want to skip it for your own login, just click through it once). It's skippable at any point, and doesn't block anything else in the app.
+
+To see it again anytime, go to **Settings → Tutorial → Replay**.

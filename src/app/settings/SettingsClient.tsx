@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { CURRENCIES } from "@/lib/currency";
 
 type Rate = { currency: string; rateToHome: number; updatedAt: string };
@@ -84,6 +85,16 @@ export default function SettingsClient({
       <div className="bg-panel rounded-[10px] p-4 mb-5">
         <div className="text-sm text-paper mb-1">Signed in as</div>
         <div className="text-sm text-sage">{email}</div>
+      </div>
+
+      <div className="bg-panel rounded-[10px] p-4 mb-5 flex items-center justify-between">
+        <div>
+          <div className="text-sm text-paper mb-1">Tutorial</div>
+          <div className="text-xs text-sage">Replay the getting-started walkthrough.</div>
+        </div>
+        <Link href="/?tutorial=1" className="text-sm bg-gold text-goldText px-3.5 py-2 rounded-lg shrink-0">
+          Replay
+        </Link>
       </div>
 
       <div className="bg-panel rounded-[10px] p-4 mb-5">

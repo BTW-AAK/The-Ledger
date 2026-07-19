@@ -8,12 +8,13 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String?
-  passwordHash String
-  homeCurrency String   @default("USD")
-  createdAt    DateTime @default(now())
+  id                String   @id @default(cuid())
+  email             String   @unique
+  name              String?
+  passwordHash      String
+  homeCurrency      String   @default("USD")
+  hasSeenOnboarding Boolean  @default(false)
+  createdAt         DateTime @default(now())
 
   accounts            Account[]
   transactions        Transaction[]

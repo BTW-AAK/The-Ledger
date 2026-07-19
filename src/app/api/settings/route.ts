@@ -8,7 +8,7 @@ export async function GET() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { homeCurrency: true, email: true, name: true },
+    select: { homeCurrency: true, email: true, name: true, hasSeenOnboarding: true },
   });
   return NextResponse.json(user);
 }
@@ -18,13 +18,22 @@ export async function PATCH(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { homeCurrency } = body;
-  if (!homeCurrency) return NextResponse.json({ error: "homeCurrency is required." }, { status: 400 });
+  const { homeCurrency, hasSeenOnboarding } = body;
+
+  if (homeCurrency === undefined && hasSeenOnboarding === undefined) {
+    return NextResponse.json({ error: "Nothing to update." }, { status: 400 });
+  }
 
   const user = await prisma.user.update({
     where: { id: userId },
-    data: { homeCurrency },
+    data: {
+      ...(homeCurrency !== undefined ? { homeCurrency } : {}),
+      ...(hasSeenOnboarding !== undefined ? { hasSeenOnboarding } : {}),
+    },
   });
 
-  return NextResponse.json({ homeCurrency: user.homeCurrency });
+  return NextResponse.json({
+    homeCurrency: user.homeCurrency,
+    hasSeenOnboarding: user.hasSeenOnboarding,
+  });
 }
