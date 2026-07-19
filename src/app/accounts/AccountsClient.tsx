@@ -107,6 +107,7 @@ export default function AccountsClient({
             {homeCurrency}
           </Link>
           <button
+            data-tour="add-account"
             onClick={openCreateForm}
             className="flex items-center gap-1.5 text-sm bg-gold text-goldText px-3.5 py-2 rounded-lg"
           >

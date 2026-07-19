@@ -103,6 +103,7 @@ export default function SettingsClient({
           Net worth, budgets, goals, and reports are all shown in this currency.
         </div>
         <select
+          data-tour="home-currency"
           value={homeCurrency}
           onChange={(e) => handleHomeCurrencyChange(e.target.value)}
           disabled={savingHome}

@@ -15,6 +15,7 @@ export default function MobileBottomNav({ onMore }: { onMore: () => void }) {
           <Link
             key={item.href}
             href={item.href}
+            data-tour={item.href === "/budgets" ? "nav-budgets" : undefined}
             className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5"
           >
             <i

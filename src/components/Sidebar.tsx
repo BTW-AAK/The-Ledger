@@ -5,6 +5,11 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { NAV_ITEMS } from "@/lib/nav";
 
+const TOUR_IDS: Record<string, string> = {
+  "/budgets": "nav-budgets",
+  "/recurring": "nav-bills",
+};
+
 export default function Sidebar() {
   const pathname = usePathname();
 
@@ -17,6 +22,7 @@ export default function Sidebar() {
           <Link
             key={item.href}
             href={item.href}
+            data-tour={TOUR_IDS[item.href]}
             className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${
               active ? "bg-lineSoft text-paper" : "text-sage hover:text-paper"
             }`}
