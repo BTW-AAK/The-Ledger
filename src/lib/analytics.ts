@@ -54,7 +54,7 @@ export async function getCurrentNetWorth(userId: string) {
 
 export async function getNetWorthSeries(userId: string, months = 6) {
   const [accounts, { homeCurrency, rates }] = await Promise.all([
-    prisma.account.findMany({ where: { userId } }),
+    prisma.account.findMany({ where: { userId, archived: false } }),
     getUserCurrencyContext(userId),
   ]);
   const accountCurrency = new Map(accounts.map((a) => [a.id, a.currency]));
@@ -72,7 +72,11 @@ export async function getNetWorthSeries(userId: string, months = 6) {
   // Note: this uses today's exchange rates for all historical points, since we don't
   // keep a history of past rates. Close enough for a personal tracker; a true historical
   // view would need to snapshot rates over time.
-  const transactionsHome = transactions.map((t) => ({
+const validAccountIds = new Set(accounts.map((a) => a.id));
+
+const transactionsHome = transactions
+  .filter((t) => validAccountIds.has(t.accountId))
+  .map((t) => ({
     date: t.date,
     homeCents: convertToHomeCents(t.amount, accountCurrency.get(t.accountId) ?? homeCurrency, homeCurrency, rates),
   }));
