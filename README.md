@@ -157,3 +157,16 @@ Then push/deploy as usual. On Vercel, remember `migrate deploy` needs to run aga
 - Exchange rates convert foreign-currency accounts into your home currency for those aggregate views. Go to `/settings` and click **Refresh rates** to pull live rates from Frankfurter (a free, keyless ECB-rate API), or enter a rate manually if you'd rather control it yourself.
 - If a currency you're using doesn't have a rate yet, the app treats it as 1:1 with your home currency rather than crashing — you'll see a warning on the Accounts page until you set a real rate.
 - One known simplification: net worth history (the 6-month chart) uses *today's* exchange rate for all past months, since historical rates aren't tracked. For currencies that move a lot against your home currency, older points on that chart will be slightly off. Everything else (current balances, monthly reports, budgets) uses up-to-date rates.
+
+---
+
+## 9. Letting other people create their own account
+
+The app now supports self-signup at `/signup` — each person gets their own completely separate set of accounts, transactions, budgets, etc. (nothing is shared between users; this isn't household sharing, it's just multiple independent users of the same deployment).
+
+**No new migration needed** for this one, but there's one new environment variable to set:
+
+- `SIGNUP_CODE` — set this to any phrase, then share that phrase (not the URL alone) with whoever you want to invite. They'll need to enter it on the signup page to create an account. Add it in Vercel under Settings → Environment Variables, then redeploy.
+- If you leave `SIGNUP_CODE` unset, `/signup` is open to anyone who finds the URL — fine if you're confident the URL stays private, but the invite code costs nothing to set up and is the safer default now that this is reachable by more than just you.
+
+Each new signup automatically gets the same default categories your account started with. Your own login (from the original seed script) still works exactly as before — this doesn't change or migrate your existing account.
