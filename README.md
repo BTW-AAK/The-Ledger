@@ -103,8 +103,12 @@ From then on, every time you `git push`, Vercel automatically redeploys.
 prisma/schema.prisma     All data models (accounts, transactions, categories, budgets, goals, holdings)
 prisma/seed.ts           Creates your login + default categories
 src/lib/                 Database client, auth config, money formatting, analytics queries
-src/components/          Shared UI: sidebar, transaction modal, charts
-src/app/                 One folder per page (dashboard, transactions, budgets, accounts, goals, investments)
+src/components/          Shared UI: sidebar, transaction modal, charts, onboarding tour
+src/app/(app)/           Every authenticated page (dashboard, transactions, budgets, etc.), sharing one
+                         persistent layout.tsx that renders the sidebar/nav/tutorial once and keeps it
+                         mounted across navigation - this is required for things like the onboarding
+                         tour to survive moving between pages
+src/app/login, signup    Pre-auth pages, deliberately outside the (app) group (no sidebar/nav chrome)
 src/app/api/             REST endpoints each page's client components call
 ```
 
